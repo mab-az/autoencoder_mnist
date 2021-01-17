@@ -21,22 +21,23 @@ learning_rate = 1e-3
 class AutoEncoder(nn.Module):
     def __init__(self, **kwargs):
         super().__init__()
-    self.encoder_hidden_layer = nn.Linear(
-        in_features=kwargs["input_shape"],
-        out_features=128
+
+        self.encoder_hidden_layer = nn.Linear(
+            in_features=kwargs["input_shape"],
+            out_features=128
+            )
+        self.encoder_output_layer = nn.Linear(
+            in_features=128,
+            out_features=128
         )
-    self.encoder_output_layer = nn.Linear(
-        in_features=128,
-        out_features=128
-    )
-    self.encoder_hidden_layer = nn.Linear(
-        in_features=128,
-        out_features=128
-    )
-    self.encoder_output_layer = nn.Linear(
-        in_features=128,
-        out_features=kwargs["input_shape"]
-    )
+        self.encoder_hidden_layer = nn.Linear(
+            in_features=128,
+            out_features=128
+        )
+        self.encoder_output_layer = nn.Linear(
+            in_features=128,
+            out_features=kwargs["input_shape"]
+        )
 
 
 def forward(self, features):
@@ -48,15 +49,18 @@ def forward(self, features):
     activation = torch.relu(activation)
     activation = self.decoder_output_layer(activation)
     reconstructed = torch.relu(activation)
+
     return reconstructed
 
 
-model = AutoEncoder(input_shape=784).to("cpu")
+device = torch.device("cpu")
+
+model = AutoEncoder(input_shape=784).to(device)
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 criterion = nn.MSELoss()
 
-transform = torchvision.transform.Compose([torchvision.transforms.ToTesor()])
+transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
 
 
 train_dataset = torchvision.datasets.MNIST(
@@ -73,10 +77,10 @@ test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=32, shuffle=False, num_workers=4
 )
 
-for epochs in range(epochs):
+for epoch in range(epochs):
     loss=0
     for batch_features, _ in train_loader:
-        batch_features = batch_features.view(-1, 784).to("cpu")
+        batch_features = batch_features.view(-1, 784).to(device)
 
         optimizer.zero_grad()
         outputs = model(batch_features)
